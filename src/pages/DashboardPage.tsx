@@ -2,10 +2,55 @@ import { Layout } from '@/components/layout/Layout';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { RecentRequests } from '@/components/dashboard/RecentRequests';
 import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import { mockDashboardStats } from '@/utils/mockData';
-import { Box, ClipboardList, AlertTriangle, Clock, Plus } from 'lucide-react';
+import { mockDashboardStats, mockCalendarEvents } from '@/utils/mockData';
+import { Box, ClipboardList, AlertTriangle, Clock, Plus, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { format, parseISO, isAfter, isBefore, addDays } from 'date-fns';
+
+function UpcomingEvents() {
+  const navigate = useNavigate();
+  const today = new Date();
+  const nextWeek = addDays(today, 7);
+  
+  const upcomingEvents = mockCalendarEvents
+    .filter(event => {
+      const eventDate = parseISO(event.date);
+      return isAfter(eventDate, today) && isBefore(eventDate, nextWeek);
+    })
+    .slice(0, 4);
+
+  return (
+    <div className="rounded-lg border border-border bg-card">
+      <div className="flex items-center justify-between border-b border-border px-6 py-4">
+        <h3 className="font-semibold text-foreground">Upcoming This Week</h3>
+        <Button variant="ghost" size="sm" onClick={() => navigate('/calendar')}>
+          View Calendar
+        </Button>
+      </div>
+      <div className="divide-y divide-border">
+        {upcomingEvents.length > 0 ? upcomingEvents.map((event) => (
+          <div key={event.id} className="flex items-center gap-4 px-6 py-4 hover:bg-secondary/30 transition-colors">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <Calendar className="h-5 w-5 text-primary" />
+            </div>
+            <div className="flex-1 space-y-1">
+              <p className="font-medium text-foreground">{event.title}</p>
+              <p className="text-sm text-muted-foreground">{event.equipment_name}</p>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {format(parseISO(event.date), 'MMM d')}
+            </div>
+          </div>
+        )) : (
+          <div className="px-6 py-8 text-center text-muted-foreground">
+            No upcoming events this week
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardPage() {
   const navigate = useNavigate();
@@ -27,7 +72,7 @@ export default function DashboardPage() {
           </Button>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid - Top Row */}
         <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard
             title="Total Equipment"
@@ -55,11 +100,14 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Content Grid */}
-        <div className="grid gap-8 lg:grid-cols-2">
+        {/* Content Grid - Middle Section */}
+        <div className="grid gap-8 lg:grid-cols-2 mb-8">
           <RecentRequests />
           <RecentActivity />
         </div>
+
+        {/* Bottom Section - Upcoming Events */}
+        <UpcomingEvents />
       </div>
     </Layout>
   );

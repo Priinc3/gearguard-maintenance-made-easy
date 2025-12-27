@@ -3,8 +3,9 @@ import { Layout } from '@/components/layout/Layout';
 import { mockCalendarEvents, CalendarEvent } from '@/utils/mockData';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { capitalizeFirst } from '@/utils/helpers';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { RequestFormModal } from '@/components/requests/RequestFormModal';
+import { toast } from 'sonner';
 import {
   startOfMonth,
   endOfMonth,
@@ -20,17 +21,28 @@ import {
   isToday,
 } from 'date-fns';
 
-function EventBadge({ event }: { event: CalendarEvent }) {
+function EventBar({ event }: { event: CalendarEvent }) {
+  const colorClasses = {
+    preventive: 'bg-success text-success-foreground',
+    corrective: {
+      critical: 'bg-priority-critical text-white',
+      high: 'bg-priority-high text-white',
+      medium: 'bg-priority-medium text-white',
+      low: 'bg-priority-low text-white',
+    },
+  };
+
+  const colorClass = event.type === 'preventive' 
+    ? colorClasses.preventive 
+    : colorClasses.corrective[event.priority];
+
   return (
     <div
       className={cn(
-        'mb-1 truncate rounded px-1.5 py-0.5 text-xs font-medium',
-        event.type === 'preventive' && 'bg-success/10 text-success',
-        event.type === 'corrective' && event.priority === 'critical' && 'bg-priority-critical/10 text-priority-critical',
-        event.type === 'corrective' && event.priority === 'high' && 'bg-priority-high/10 text-priority-high',
-        event.type === 'corrective' && event.priority === 'medium' && 'bg-priority-medium/10 text-priority-medium',
-        event.type === 'corrective' && event.priority === 'low' && 'bg-priority-low/10 text-priority-low'
+        'mb-1 truncate rounded px-1.5 py-0.5 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity',
+        colorClass
       )}
+      title={event.title}
     >
       {event.title}
     </div>
@@ -39,6 +51,8 @@ function EventBadge({ event }: { event: CalendarEvent }) {
 
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -57,6 +71,13 @@ export default function CalendarPage() {
   const goToNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const goToToday = () => setCurrentDate(new Date());
 
+  const handleDayClick = (date: Date, events: CalendarEvent[]) => {
+    if (events.length === 0) {
+      setSelectedDate(date);
+      setIsFormOpen(true);
+    }
+  };
+
   return (
     <Layout>
       <div className="flex h-full flex-col p-8">
@@ -68,7 +89,7 @@ export default function CalendarPage() {
               Schedule and track maintenance activities
             </p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setIsFormOpen(true)}>
             <Plus className="h-4 w-4" />
             Schedule Maintenance
           </Button>
@@ -97,7 +118,7 @@ export default function CalendarPage() {
         {/* Calendar Grid */}
         <div className="flex-1 rounded-lg border border-border bg-card overflow-hidden">
           {/* Weekday Headers */}
-          <div className="grid grid-cols-7 border-b border-border">
+          <div className="grid grid-cols-7 border-b border-border bg-muted/30">
             {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
               <div
                 key={day}
@@ -118,8 +139,9 @@ export default function CalendarPage() {
               return (
                 <div
                   key={idx}
+                  onClick={() => handleDayClick(day, dayEvents)}
                   className={cn(
-                    'min-h-[120px] border-b border-r border-border p-2 transition-colors hover:bg-secondary/30',
+                    'min-h-[120px] border-b border-r border-border p-2 transition-colors cursor-pointer hover:bg-secondary/30',
                     !isCurrentMonth && 'bg-muted/30'
                   )}
                 >
@@ -136,10 +158,10 @@ export default function CalendarPage() {
                   </div>
                   <div className="space-y-1">
                     {dayEvents.slice(0, 2).map((event) => (
-                      <EventBadge key={event.id} event={event} />
+                      <EventBar key={event.id} event={event} />
                     ))}
                     {dayEvents.length > 2 && (
-                      <div className="text-xs text-muted-foreground text-center">
+                      <div className="text-xs text-muted-foreground text-center font-medium">
                         +{dayEvents.length - 2} more
                       </div>
                     )}
@@ -153,23 +175,32 @@ export default function CalendarPage() {
         {/* Legend */}
         <div className="mt-4 flex items-center gap-6">
           <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded bg-success/50" />
+            <div className="h-3 w-3 rounded bg-success" />
             <span className="text-sm text-muted-foreground">Preventive</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded bg-priority-critical/50" />
+            <div className="h-3 w-3 rounded bg-priority-critical" />
             <span className="text-sm text-muted-foreground">Critical</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded bg-priority-high/50" />
+            <div className="h-3 w-3 rounded bg-priority-high" />
             <span className="text-sm text-muted-foreground">High</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded bg-priority-medium/50" />
+            <div className="h-3 w-3 rounded bg-priority-medium" />
             <span className="text-sm text-muted-foreground">Medium</span>
           </div>
         </div>
       </div>
+
+      <RequestFormModal 
+        open={isFormOpen} 
+        onOpenChange={setIsFormOpen}
+        onSubmit={(data) => {
+          console.log('New request:', data);
+          toast.success('Maintenance scheduled successfully');
+        }}
+      />
     </Layout>
   );
 }

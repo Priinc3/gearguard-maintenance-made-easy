@@ -3,10 +3,13 @@ import { Layout } from '@/components/layout/Layout';
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { RequestFormModal } from '@/components/requests/RequestFormModal';
 import { Plus, Search, Filter } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function RequestsPage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   return (
     <Layout>
@@ -19,7 +22,7 @@ export default function RequestsPage() {
               Drag and drop cards to update request status
             </p>
           </div>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setIsFormOpen(true)}>
             <Plus className="h-4 w-4" />
             New Request
           </Button>
@@ -47,6 +50,15 @@ export default function RequestsPage() {
           <KanbanBoard />
         </div>
       </div>
+
+      <RequestFormModal 
+        open={isFormOpen} 
+        onOpenChange={setIsFormOpen}
+        onSubmit={(data) => {
+          console.log('New request:', data);
+          toast.success('Request created successfully');
+        }}
+      />
     </Layout>
   );
 }
