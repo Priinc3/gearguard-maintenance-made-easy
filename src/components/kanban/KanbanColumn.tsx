@@ -4,6 +4,8 @@ import { RequestCard } from './RequestCard';
 import { cn } from '@/lib/utils';
 import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
 
 interface KanbanColumnProps {
   id: string;
@@ -11,16 +13,17 @@ interface KanbanColumnProps {
   requests: MaintenanceRequest[];
   color: string;
   onCardClick?: (request: MaintenanceRequest) => void;
+  onAddRequest?: () => void;
 }
 
 export const KanbanColumn = forwardRef<HTMLDivElement, KanbanColumnProps>(
-  function KanbanColumn({ id, title, requests, color, onCardClick }, forwardedRef) {
+  function KanbanColumn({ id, title, requests, color, onCardClick, onAddRequest }, forwardedRef) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
   return (
-    <div className="flex h-full w-80 shrink-0 flex-col rounded-lg bg-secondary/30">
+    <div className="flex h-full w-80 shrink-0 flex-col rounded-lg bg-secondary/50">
       {/* Column Header */}
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
         <div 
           className={cn(
             'h-3 w-3 rounded-full',
@@ -28,7 +31,7 @@ export const KanbanColumn = forwardRef<HTMLDivElement, KanbanColumnProps>(
           )} 
         />
         <h3 className="font-medium text-foreground">{title}</h3>
-        <span className="ml-auto rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+        <span className="ml-auto rounded-full bg-card border border-border px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
           {requests.length}
         </span>
       </div>
@@ -37,7 +40,7 @@ export const KanbanColumn = forwardRef<HTMLDivElement, KanbanColumnProps>(
       <div
         ref={setNodeRef}
         className={cn(
-          'flex-1 space-y-3 overflow-y-auto px-3 pb-3 transition-colors duration-200',
+          'flex-1 space-y-3 overflow-y-auto p-3 transition-colors duration-200',
           isOver && 'bg-primary/5'
         )}
       >
@@ -52,11 +55,25 @@ export const KanbanColumn = forwardRef<HTMLDivElement, KanbanColumnProps>(
         </SortableContext>
 
         {requests.length === 0 && (
-          <div className="flex h-24 items-center justify-center rounded-lg border-2 border-dashed border-border">
+          <div className="flex h-24 items-center justify-center rounded-lg border-2 border-dashed border-border bg-card/50">
             <p className="text-sm text-muted-foreground">No requests</p>
           </div>
         )}
       </div>
+
+      {/* Add Request Button - Only show in "New" column */}
+      {id === 'new' && onAddRequest && (
+        <div className="p-3 pt-0">
+          <Button 
+            variant="ghost" 
+            className="w-full gap-2 border border-dashed border-border bg-card/50 hover:bg-card text-muted-foreground hover:text-foreground"
+            onClick={onAddRequest}
+          >
+            <Plus className="h-4 w-4" />
+            Add Request
+          </Button>
+        </div>
+      )}
     </div>
   );
 });
