@@ -120,7 +120,7 @@ function TeamEditModal({
     const [saving, setSaving] = useState(false);
     const [addingMember, setAddingMember] = useState(false);
     const [selectedUser, setSelectedUser] = useState('');
-    const [memberRole, setMemberRole] = useState('technician');
+    const [memberRole, setMemberRole] = useState<'technician' | 'lead'>('technician');
     const [availableUsers, setAvailableUsers] = useState<any[]>([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
 
@@ -290,13 +290,13 @@ function TeamEditModal({
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Role in Team</Label>
-                                    <Select value={memberRole} onValueChange={setMemberRole}>
+                                    <Select value={memberRole} onValueChange={(v) => setMemberRole(v as 'technician' | 'lead')}>
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="technician">Technician</SelectItem>
-                                            <SelectItem value="manager">Team Manager</SelectItem>
+                                            <SelectItem value="lead">Team Lead</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
