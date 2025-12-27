@@ -5,12 +5,11 @@ export interface WorkCenter {
     id: string;
     name: string;
     code: string | null;
+    tag: string | null;
     cost_per_hour: number | null;
-    capacity_time_efficiency: number | null;
+    capacity_efficiency: number | null;
     oee_target: number | null;
-    is_active: boolean;
     created_at: string;
-    updated_at?: string;
 }
 
 export function useWorkCenters() {
@@ -20,7 +19,6 @@ export function useWorkCenters() {
             const { data, error } = await (supabase as any)
                 .from('work_centers')
                 .select('*')
-                .eq('is_active', true)
                 .order('name');
 
             if (error) {
@@ -78,7 +76,7 @@ export function useUpdateWorkCenter() {
         mutationFn: async ({ id, ...updates }: Partial<WorkCenter> & { id: string }) => {
             const { data, error } = await (supabase as any)
                 .from('work_centers')
-                .update({ ...updates, updated_at: new Date().toISOString() })
+                .update(updates)
                 .eq('id', id)
                 .select()
                 .single();
@@ -99,7 +97,7 @@ export function useDeleteWorkCenter() {
         mutationFn: async (id: string) => {
             const { error } = await (supabase as any)
                 .from('work_centers')
-                .update({ is_active: false })
+                .delete()
                 .eq('id', id);
 
             if (error) throw error;

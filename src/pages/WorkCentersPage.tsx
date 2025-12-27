@@ -28,7 +28,7 @@ function WorkCenterFormModal({
     const [code, setCode] = useState(workCenter?.code || '');
     const [costPerHour, setCostPerHour] = useState(workCenter?.cost_per_hour?.toString() || '');
     const [oeeTarget, setOeeTarget] = useState(workCenter?.oee_target?.toString() || '');
-    const [capacityEfficiency, setCapacityEfficiency] = useState(workCenter?.capacity_time_efficiency?.toString() || '');
+    const [capacityEfficiency, setCapacityEfficiency] = useState(workCenter?.capacity_efficiency?.toString() || '');
 
     const createWorkCenter = useCreateWorkCenter();
     const updateWorkCenter = useUpdateWorkCenter();
@@ -48,7 +48,7 @@ function WorkCenterFormModal({
                 code: code.trim() || null,
                 cost_per_hour: costPerHour ? parseFloat(costPerHour) : null,
                 oee_target: oeeTarget ? parseFloat(oeeTarget) : null,
-                capacity_time_efficiency: capacityEfficiency ? parseFloat(capacityEfficiency) : null,
+                capacity_efficiency: capacityEfficiency ? parseFloat(capacityEfficiency) : null,
             };
 
             if (isEditing) {
@@ -294,7 +294,7 @@ export default function WorkCentersPage() {
                                                 ) : '—'}
                                             </TableCell>
                                             <TableCell className="text-right">
-                                                {wc.capacity_time_efficiency ? `${wc.capacity_time_efficiency}%` : '—'}
+                                                {wc.capacity_efficiency ? `${wc.capacity_efficiency}%` : '—'}
                                             </TableCell>
                                             <TableCell>
                                                 <DropdownMenu>
