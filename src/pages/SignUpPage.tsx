@@ -77,7 +77,9 @@ export default function SignUpPage() {
         setLoading(true);
 
         try {
-            // Sign up with Supabase Auth
+            console.log('Starting signup...', { email, firstName, lastName, department });
+
+            // Sign up with Supabase Auth - include department in metadata
             const { data, error: signUpError } = await supabase.auth.signUp({
                 email,
                 password,
@@ -85,33 +87,28 @@ export default function SignUpPage() {
                     data: {
                         first_name: firstName,
                         last_name: lastName,
+                        department: department,
+                        phone: phone || null,
                     },
                 },
             });
 
+            console.log('Signup response:', { data, error: signUpError });
+
             if (signUpError) throw signUpError;
 
-            // Update profile with additional technician details
-            if (data.user) {
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .update({
-                        department,
-                        phone: phone || null,
-                        // Note: specialization and bio would need to be added to the profiles table
-                        // For now, we'll store them in a notes field or extend the schema
-                    })
-                    .eq('id', data.user.id);
-
-                if (profileError) {
-                    console.error('Profile update error:', profileError);
-                }
+            if (!data.user) {
+                throw new Error('No user returned from signup');
             }
+
+            // Profile is created by the handle_new_user trigger
+            // The trigger reads from raw_user_meta_data, so we already passed the info above
 
             setSuccess(true);
             toast.success('Account created successfully!');
         } catch (error: any) {
-            setError(error.message);
+            console.error('Signup error:', error);
+            setError(error.message || 'Failed to create account');
         } finally {
             setLoading(false);
         }
@@ -158,10 +155,10 @@ export default function SignUpPage() {
                             <div
                                 key={s}
                                 className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors ${s === step
-                                        ? 'bg-primary text-primary-foreground'
-                                        : s < step
-                                            ? 'bg-green-500 text-white'
-                                            : 'bg-muted text-muted-foreground'
+                                    ? 'bg-primary text-primary-foreground'
+                                    : s < step
+                                        ? 'bg-green-500 text-white'
+                                        : 'bg-muted text-muted-foreground'
                                     }`}
                             >
                                 {s < step ? '✓' : s}
