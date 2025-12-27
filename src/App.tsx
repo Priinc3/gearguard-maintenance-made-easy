@@ -10,6 +10,7 @@ import RequestsPage from "./pages/RequestsPage";
 import EquipmentPage from "./pages/EquipmentPage";
 import CalendarPage from "./pages/CalendarPage";
 import SettingsPage from "./pages/SettingsPage";
+import ManagementPage from "./pages/ManagementPage";
 import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import NotFound from "./pages/NotFound";
@@ -59,6 +60,11 @@ const App = () => (
             <Route path="/settings" element={
               <ProtectedRoute>
                 <SettingsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/management" element={
+              <ProtectedRoute>
+                <ManagementPage />
               </ProtectedRoute>
             } />
 

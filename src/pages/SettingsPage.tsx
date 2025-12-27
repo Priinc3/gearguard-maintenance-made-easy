@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,10 +11,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Loader2, User, Mail, Building, Phone, Shield } from 'lucide-react';
+import { Loader2, User, Mail, Building, Phone, Shield, Users, Tag, ChevronRight } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 
 export default function SettingsPage() {
+  const navigate = useNavigate();
   const { user, profile, signOut } = useAuth();
   const queryClient = useQueryClient();
 
@@ -23,6 +25,7 @@ export default function SettingsPage() {
   const [phone, setPhone] = useState(profile?.phone || '');
   const [saving, setSaving] = useState(false);
 
+  const isAdminOrManager = profile?.role === 'admin' || profile?.role === 'manager';
   const initials = `${profile?.first_name?.[0] || ''}${profile?.last_name?.[0] || ''}`.toUpperCase();
 
   const handleSave = async () => {
@@ -182,6 +185,48 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
+          {/* Management Card - Admin/Manager Only */}
+          {isAdminOrManager && (
+            <Card className="border shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg">Management</CardTitle>
+                <CardDescription>Manage teams and categories</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <button
+                  onClick={() => navigate('/management')}
+                  className="flex w-full items-center justify-between rounded-lg border border-border p-4 text-left transition-colors hover:bg-muted"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
+                      <Users className="h-5 w-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Maintenance Teams</p>
+                      <p className="text-sm text-muted-foreground">Create teams and assign members</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </button>
+                <button
+                  onClick={() => navigate('/management')}
+                  className="flex w-full items-center justify-between rounded-lg border border-border p-4 text-left transition-colors hover:bg-muted"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100">
+                      <Tag className="h-5 w-5 text-amber-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Equipment Categories</p>
+                      <p className="text-sm text-muted-foreground">Organize equipment by type</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                </button>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Account Card */}
           <Card className="border shadow-sm">
             <CardHeader>
@@ -207,3 +252,4 @@ export default function SettingsPage() {
     </Layout>
   );
 }
+
