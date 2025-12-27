@@ -55,6 +55,8 @@ export function RequestFormModal({ open, onOpenChange }: RequestFormModalProps) 
         request_type: formData.request_type,
         due_date: formData.due_date ? format(formData.due_date, 'yyyy-MM-dd') : undefined,
         created_by: user.id,
+        technician_id: defaults?.default_technician_id || selectedEquipment?.default_technician_id || undefined,
+        category_id: defaults?.category_id || selectedEquipment?.category_id || undefined,
       });
 
       toast.success('Request created successfully');

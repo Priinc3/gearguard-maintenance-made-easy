@@ -12,6 +12,8 @@ type RequestInsert = {
     due_date?: string;
     scheduled_date?: string;
     created_by: string;
+    technician_id?: string;
+    category_id?: string;
 };
 
 export function useRequests() {
@@ -49,11 +51,27 @@ export function useCreateRequest() {
                 .single();
 
             if (error) throw error;
+
+            // Create notification for assigned technician
+            if (data && request.technician_id) {
+                await (supabase as any)
+                    .from('notifications')
+                    .insert({
+                        user_id: request.technician_id,
+                        title: 'New Assignment',
+                        message: `You have been assigned to: ${request.subject}`,
+                        type: 'assignment',
+                        related_request_id: data.id,
+                        is_read: false
+                    });
+            }
+
             return data;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['requests'] });
             queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+            queryClient.invalidateQueries({ queryKey: ['notifications'] });
         },
     });
 }
